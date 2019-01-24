@@ -102,7 +102,7 @@
                 0% { transform: rotate(0deg); } 
                 100% { transform: rotate(360deg); } 
             }`;
-        var styleId = this.hoverClass;
+        var styleId = this.mmeClass;
         var style = document.createElement(this.mmeStyle);
         var existingStyle = document.querySelector("#"+styleId);
         if (!existingStyle) {
@@ -115,11 +115,11 @@
             }
             document.getElementsByTagName(this.htmlHead)[0].appendChild(style);
         }
-        this.element.className = this.hoverClass;   
+        this.element.classList.add(this.mmeClass);
     }
     function POST(data, success, error) {
         var xmlHttp = new XMLHttpRequest();
-        this.element.className = this.mmeLoader;
+        this.element.classList.add(this.mmeLoader);
         var _ = this;
         xmlHttp.onreadystatechange = function() {
             _.element.classList.remove(_.mmeLoader)
