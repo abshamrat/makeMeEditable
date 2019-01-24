@@ -4,20 +4,30 @@
         if (arguments[0] && typeof arguments[0] == "object") {
             this.elemIdToEditable = arguments[0].elemIdToEditable;
             this.endPoint = arguments[0].endPoint;
-            this.postName = arguments[0].postName;
+            this.postParamName = arguments[0].postParamName;
+            this.isTextArea = arguments[0].isTextArea || false;
             this.hoverBG = arguments[0].hoverBG || "#f1f1f1";
         }
         init.call(this);
     }
     function init(){
+        this.isEnabled = false;
         this.element = document.getElementById(this.elemIdToEditable);
         this.elementOldTxt = this.element.innerHTML;
         this.element.addEventListener('click', makeEditable.bind(this), true);
         appendStyle.call(this);
     };
     function makeEditable() {
-        this.textArea = document.createElement('textarea');
-        this.textArea.rows = "4";
+        if (this.isEnabled) {
+            return;
+        }
+        this.isEnabled = true;
+        if (this.isTextArea) {
+            this.textArea = document.createElement('textarea');
+        } else {
+            this.textArea = document.createElement('input');
+        }
+        this.textArea.rows = "3";
         this.textArea.cols = "35";
 
         this.saveBtn = document.createElement('button');
@@ -35,26 +45,18 @@
         this.element.appendChild(this.cancelBtn);
         this.element.appendChild(this.saveBtn);
  
-        this.textArea.addEventListener('click', makeMeNeutral.bind(this));
         this.cancelBtn.addEventListener('click', cancelEditing.bind(this));
         this.saveBtn.addEventListener('click', saveChanges.bind(this));
-        this.element.removeEventListener('click', makeEditable, true);
-        
-    }
-    function makeMeNeutral() {
-        this.element.removeEventListener('click', makeEditable, true);
-        
     }
     function saveChanges() {
-        var data = {[this.postName]:this.textArea.innerHTML };
-        this.elementNewText = this.textArea.innerHTML;
-        this.element.innerHTML = this.elementNewText;
-        console.log(data);
-        this.element.removeEventListener('click', makeEditable, true);
-        
+        var data = {[this.postParamName]:this.textArea.value };
+        POST.apply(this, [data, updateSuccessfully, updateError]);
+        this.elementNewText = this.textArea.value;
+        this.isEnabled = false;
     }
     function cancelEditing() {
         this.element.innerHTML = this.elementOldTxt;
+        this.isEnabled = false;
     }
     function appendStyle() {
         var classDef = '.mme{ cursor: pointer; transition: all 0.4s; } .mme:hover{ background-color: '+this.hoverBG+'} .mme-textarea{  resize: both;overflow: auto;}';
@@ -62,18 +64,37 @@
         var style = document.createElement('style');
         var existingStyle = document.querySelector("#"+styleId);
         if (!existingStyle) {
+            style.type = 'text/css';
             style.id = styleId;
             if (style.styleSheet) {
                 style.styleSheet.cssText = classDef;
             } else {
-                // style.appendChild(document.createTextNode(classDef));
-                style.innerHTML = classDef;
+                style.appendChild(document.createTextNode(classDef));
             }
-            style.type = 'text/css';
             document.getElementsByTagName('head')[0].appendChild(style);
         }
-        this.element.className = this.hoverClass;
-        
+        this.element.className = this.hoverClass;   
+    }
+    function POST(data, success, error) {
+        var xmlHttp = new XMLHttpRequest();
+        var self = this;
+        xmlHttp.onreadystatechange = function() {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            {
+                success.call(self);
+            } else {
+                error.call(self);
+            }
+        }
+        xmlHttp.open("POST", this.endPoint, true); // true for asynchronous 
+        // xmlHttp.setRequestHeader(this.xHeader,this.xHeadParam);
+        xmlHttp.send(JSON.stringify(data));
+    };
+    function updateSuccessfully() {
+        this.element.innerHTML = this.elementNewText;
+    }
+    function updateError() {
+        this.element.innerHTML = this.elementOldTxt;
     }
 
 }());
