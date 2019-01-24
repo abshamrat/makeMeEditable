@@ -23,6 +23,8 @@
             this.elemIdToEditable = arguments[0].elemIdToEditable;
             this.endPoint = arguments[0].endPoint;
             this.postParamName = arguments[0].postParamName;
+            this.postParamKey = arguments[0].postParamKey;
+            this.postParamKeyName = arguments[0].postParamKeyName || "id";
             this.isTextArea = arguments[0].isTextArea || false;
             this.hoverBG = arguments[0].hoverBG || "#f1f1f1";
         }
@@ -67,7 +69,7 @@
     }
     function PositiveChanges() {
         this.isEnabled = false;
-        var data = {[this.postParamName]:this.textArea.value };
+        var data = {[this.postParamName]:this.textArea.value, [this.postParamKeyName]: this.postParamKey };
         POST.apply(this, [data, updateSuccessfully, updateError]);
         this.elementNewText = this.textArea.value;
     }
@@ -120,23 +122,25 @@
         this.element.className = this.mmeLoader;
         var _ = this;
         xmlHttp.onreadystatechange = function() {
-            
+            _.element.classList.remove(_.mmeLoader)
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             {
                 success.call(_);
             } else {
-                error.bind(_);
+                error.call(_);
                 // setTimeout(error.bind(_), 2000);
             }
         }
-        xmlHttp.open(this.mmeUpdateMethod, this.endPoint, true);
+        xmlHttp.open(this.mmeUpdateMethod, this.endPoint, true); // true for asynchronous 
         // xmlHttp.setRequestHeader(this.xHeader,this.xHeadParam);
         xmlHttp.send(JSON.stringify(data));
     };
     function updateSuccessfully() {
+        alert('Updated Successfully');
         this.element.innerHTML = this.elementNewText;
     }
     function updateError() {
+        alert('A Server Side Error Occured');
         this.element.innerHTML = this.elementOldTxt;
     }
 
