@@ -1,6 +1,24 @@
 (function(){
     this.MakeMeEditable = function() {
-        this.hoverClass = "mme";
+        this.mmeClass = "mme";
+        this.mmeLoader = "mme-loader";
+        this.mmeTextArea = "textarea";
+        this.mmeInput = "input";
+        this.mmeButton = "button";
+        this.mmeBr = "br";
+        this.mmeStyle = "style";
+        this.mmeStyleType = "text/css";
+        this.htmlHead = "head";
+        this.mmeRows = "3";
+        this.mmeCols = "30";
+        this.mmePositiveClass = "mme-Positive";
+        this.mmeNegativeClass = "mme-Negative";
+        this.mmePositiveName = "Save";
+        this.mmeNegativeName = "cancel";
+        this.mmePositivtEvent = "click";
+        this.mmeNegativeEvent = "click";
+        this.mmeEnabledEvent = "click";
+        this.mmeUpdateMethod = "POST";
         if (arguments[0] && typeof arguments[0] == "object") {
             this.elemIdToEditable = arguments[0].elemIdToEditable;
             this.endPoint = arguments[0].endPoint;
@@ -14,7 +32,7 @@
         this.isEnabled = false;
         this.element = document.getElementById(this.elemIdToEditable);
         this.elementOldTxt = this.element.innerHTML;
-        this.element.addEventListener('click', makeEditable.bind(this), true);
+        this.element.addEventListener(this.mmeEnabledEvent, makeEditable.bind(this), true);
         appendStyle.call(this);
     };
     function makeEditable() {
@@ -23,70 +41,95 @@
         }
         this.isEnabled = true;
         if (this.isTextArea) {
-            this.textArea = document.createElement('textarea');
+            this.textArea = document.createElement(this.mmeTextArea);
         } else {
-            this.textArea = document.createElement('input');
+            this.textArea = document.createElement(this.mmeInput);
         }
-        this.textArea.rows = "3";
-        this.textArea.cols = "35";
-
-        this.saveBtn = document.createElement('button');
-        this.cancelBtn = document.createElement('button');
-        this.br = document.createElement('br');
-
-        this.saveBtn.className = 'mme-save';
-        this.saveBtn.innerHTML = 'Save';
-        this.cancelBtn.className = 'mme-cancel';
-        this.cancelBtn.innerHTML = 'Cancel';
+        this.NegativeBtn = document.createElement(this.mmeButton);
+        this.PositiveBtn = document.createElement(this.mmeButton);
+        this.br = document.createElement(this.mmeBr);
+        this.textArea.rows = this.mmeRows;
+        this.textArea.cols = this.mmeCols;
+        
+        this.PositiveBtn.className = this.mmePositiveClass;
+        this.PositiveBtn.innerHTML = this.mmePositiveName;
+        this.NegativeBtn.className = this.mmeNegativeClass;
+        this.NegativeBtn.innerHTML = this.mmeNegativeName;
         
         this.element.innerHTML = '';
         this.element.appendChild(this.textArea);
         this.element.appendChild(this.br);
-        this.element.appendChild(this.cancelBtn);
-        this.element.appendChild(this.saveBtn);
+        this.element.appendChild(this.NegativeBtn);
+        this.element.appendChild(this.PositiveBtn);
  
-        this.cancelBtn.addEventListener('click', cancelEditing.bind(this));
-        this.saveBtn.addEventListener('click', saveChanges.bind(this));
+        this.NegativeBtn.addEventListener(this.mmePositivtEvent, NegativeEditing.bind(this));
+        this.PositiveBtn.addEventListener(this.mmeNegativeEvent, PositiveChanges.bind(this));
     }
-    function saveChanges() {
+    function PositiveChanges() {
+        this.isEnabled = false;
         var data = {[this.postParamName]:this.textArea.value };
         POST.apply(this, [data, updateSuccessfully, updateError]);
         this.elementNewText = this.textArea.value;
-        this.isEnabled = false;
     }
-    function cancelEditing() {
+    function NegativeEditing() {
         this.element.innerHTML = this.elementOldTxt;
         this.isEnabled = false;
     }
     function appendStyle() {
-        var classDef = '.mme{ cursor: pointer; transition: all 0.4s; } .mme:hover{ background-color: '+this.hoverBG+'} .mme-textarea{  resize: both;overflow: auto;}';
+        var classDef = `
+            .mme{ 
+                cursor: pointer; 
+                transition: all 0.4s; 
+            } 
+            .mme:hover{ 
+                background-color: ${this.hoverBG}
+            } 
+            .mme-textarea{  
+                resize: both;
+                overflow: auto;
+            } 
+            .mme-loader { 
+                border: 8px solid #f3f3f3; /* Light grey */ 
+                border-top: 8px solid #3498db; /* Blue */ 
+                border-radius: 50%; 
+                width: 30px; 
+                height: 30px; 
+                animation: spin 2s linear infinite; 
+            } 
+            @keyframes spin { 
+                0% { transform: rotate(0deg); } 
+                100% { transform: rotate(360deg); } 
+            }`;
         var styleId = this.hoverClass;
-        var style = document.createElement('style');
+        var style = document.createElement(this.mmeStyle);
         var existingStyle = document.querySelector("#"+styleId);
         if (!existingStyle) {
-            style.type = 'text/css';
+            style.type = this.mmeStyleType;
             style.id = styleId;
             if (style.styleSheet) {
                 style.styleSheet.cssText = classDef;
             } else {
                 style.appendChild(document.createTextNode(classDef));
             }
-            document.getElementsByTagName('head')[0].appendChild(style);
+            document.getElementsByTagName(this.htmlHead)[0].appendChild(style);
         }
         this.element.className = this.hoverClass;   
     }
     function POST(data, success, error) {
         var xmlHttp = new XMLHttpRequest();
-        var self = this;
+        this.element.className = this.mmeLoader;
+        var _ = this;
         xmlHttp.onreadystatechange = function() {
+            
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             {
-                success.call(self);
+                success.call(_);
             } else {
-                error.call(self);
+                error.bind(_);
+                // setTimeout(error.bind(_), 2000);
             }
         }
-        xmlHttp.open("POST", this.endPoint, true); // true for asynchronous 
+        xmlHttp.open(this.mmeUpdateMethod, this.endPoint, true);
         // xmlHttp.setRequestHeader(this.xHeader,this.xHeadParam);
         xmlHttp.send(JSON.stringify(data));
     };
