@@ -13,8 +13,14 @@
                     isTextArea: true,
                     postParamName: 'question',
                     postParamKey: '1'
-                }
-            );
+                });
+                makeMeEditable.listen('mme-error', function(e) {
+                    console.log('Error Occured');
+                    console.log(e.status);
+                });
+                makeMeEditable.listen('mme-success', function(e) {
+                    console.log('Successfully Updated');
+                });
         </script>
     </body>
 

@@ -19,6 +19,8 @@
         this.mmeNegativeEvent = "click";
         this.mmeEnabledEvent = "click";
         this.mmeUpdateMethod = "POST";
+        this.listenEvent = ['mme-error', 'mme-success'];
+        this.dispatch = [];
         if (arguments[0] && typeof arguments[0] == "object") {
             this.elemIdToEditable = arguments[0].elemIdToEditable;
             this.endPoint = arguments[0].endPoint;
@@ -29,13 +31,23 @@
             this.hoverBG = arguments[0].hoverBG || "#f1f1f1";
         }
         init.call(this);
+        
     }
     function init(){
         this.isEnabled = false;
         this.element = document.getElementById(this.elemIdToEditable);
         this.elementOldTxt = this.element.innerHTML;
         this.element.addEventListener(this.mmeEnabledEvent, makeEditable.bind(this), true);
+        this.listen = function(etype, dispatch) {
+            if(this.listenEvent[0] === etype || this.listenEvent[1] === etype)
+            {
+                this.dispatch[etype] = dispatch;
+                return;
+            }
+            new Error(`Please define valid event [${this.listenEvent.join(' or ')}]`);
+        }
         appendStyle.call(this);
+        
     };
     function makeEditable() {
         if (this.isEnabled) {
@@ -67,11 +79,11 @@
         this.NegativeBtn.addEventListener(this.mmePositivtEvent, NegativeEditing.bind(this));
         this.PositiveBtn.addEventListener(this.mmeNegativeEvent, PositiveChanges.bind(this));
     }
-    function PositiveChanges() {
-        this.isEnabled = false;
+    function PositiveChanges(e) {
         var data = {[this.postParamName]:this.textArea.value, [this.postParamKeyName]: this.postParamKey };
         POST.apply(this, [data, updateSuccessfully, updateError]);
         this.elementNewText = this.textArea.value;
+        this.isEnabled = false;
     }
     function NegativeEditing() {
         this.element.innerHTML = this.elementOldTxt;
@@ -121,27 +133,30 @@
         var xmlHttp = new XMLHttpRequest();
         this.element.classList.add(this.mmeLoader);
         var _ = this;
-        xmlHttp.onreadystatechange = function() {
-            _.element.classList.remove(_.mmeLoader)
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            {
-                success.call(_);
-            } else {
-                error.call(_);
-                // setTimeout(error.bind(_), 2000);
+        sent = false;
+        xmlHttp.onreadystatechange = function(e) {
+            if (!sent) {
+                sent = true;
+                _.element.classList.remove(_.mmeLoader)
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                {
+                    success.apply(_, [xmlHttp]);
+                } else {
+                    error.apply(_, [xmlHttp]);
+                }
             }
         }
-        xmlHttp.open(this.mmeUpdateMethod, this.endPoint, true); // true for asynchronous 
+        xmlHttp.open(this.mmeUpdateMethod, this.endPoint, true);
         // xmlHttp.setRequestHeader(this.xHeader,this.xHeadParam);
         xmlHttp.send(JSON.stringify(data));
     };
-    function updateSuccessfully() {
-        alert('Updated Successfully');
+    function updateSuccessfully(res) {
         this.element.innerHTML = this.elementNewText;
+        return this.dispatch[this.listenEvent[1]].apply(null, [res]) || null;
     }
-    function updateError() {
-        alert('A Server Side Error Occured');
+    function updateError(res) {
         this.element.innerHTML = this.elementOldTxt;
+        return this.dispatch[this.listenEvent[0]].apply(null, [res]) || null;
     }
 
 }());
