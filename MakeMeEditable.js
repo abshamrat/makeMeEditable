@@ -64,6 +64,7 @@
         this.br = document.createElement(this.mmeBr);
         this.textArea.rows = this.mmeRows;
         this.textArea.cols = this.mmeCols;
+        this.textArea.value = this.elementOldTxt;
         
         this.PositiveBtn.className = this.mmePositiveClass;
         this.PositiveBtn.innerHTML = this.mmePositiveName;
