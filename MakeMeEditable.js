@@ -11,16 +11,15 @@
         this.htmlHead = "head";
         this.mmeRows = "3";
         this.mmeCols = "30";
-        this.mmePositiveClass = "mme-Positive";
-        this.mmeNegativeClass = "mme-Negative";
         this.mmePositiveName = "Save";
-        this.mmeNegativeName = "cancel";
+        this.mmeNegativeName = "Cancel";
         this.mmePositivtEvent = "click";
         this.mmeNegativeEvent = "click";
         this.mmeEnabledEvent = "click";
         this.mmeUpdateMethod = "POST";
         this.listenEvent = ['mme-error', 'mme-success'];
         this.dispatch = [];
+
         if (arguments[0] && typeof arguments[0] == "object") {
             this.elemIdToEditable = arguments[0].elemIdToEditable;
             this.endPoint = arguments[0].endPoint;
@@ -29,7 +28,10 @@
             this.postParamKeyName = arguments[0].postParamKeyName || "id";
             this.isTextArea = arguments[0].isTextArea || false;
             this.hoverBG = arguments[0].hoverBG || "#f1f1f1";
+            this.mmePositiveClass = arguments[0].mmePositiveClass || "mme-positive";
+            this.mmeNegativeClass = arguments[0].mmeNegativeClass || "mme-negative";
         }
+
         init.call(this);
         
     }
@@ -66,9 +68,9 @@
         this.textArea.cols = this.mmeCols;
         this.textArea.value = this.elementOldTxt;
         
-        this.PositiveBtn.className = this.mmePositiveClass;
+        this.PositiveBtn.classList.add(this.mmePositiveClass);
         this.PositiveBtn.innerHTML = this.mmePositiveName;
-        this.NegativeBtn.className = this.mmeNegativeClass;
+        this.NegativeBtn.classList.add(this.mmeNegativeClass);
         this.NegativeBtn.innerHTML = this.mmeNegativeName;
         
         this.element.innerHTML = '';
@@ -93,7 +95,7 @@
     function appendStyle() {
         var classDef = `
             .mme{ 
-                cursor: pointer; 
+                cursor: pointer;
                 transition: all 0.4s; 
             } 
             .mme:hover{ 
@@ -110,7 +112,39 @@
                 width: 30px; 
                 height: 30px; 
                 animation: spin 2s linear infinite; 
-            } 
+            }
+            .mme-positive{
+                border: 0.5px solid #4cae4c;
+                background: #5cb85c;
+                outer-border:none;
+                padding: 5px;
+                font-size:11px;
+                font-weight: bold;
+                color: #FFF;
+                margin:1px;
+                cursor:pointer;
+                transition: all 0.4s;
+            }
+            .mme-positive:hover{
+                border: 0.5px solid #398439;
+                background: #449d44;
+            }
+            .mme-negative{
+                border: 0.5px solid #d43f3a;
+                background: #d9534f;
+                outer-border:none;
+                padding: 5px;
+                font-size:11px;
+                font-weight: bold;
+                color: #FFF;
+                margin:1px;
+                cursor:pointer;
+                transition: all 0.4s;
+            }
+            .mme-negative:hover{
+                border: 0.5px solid #ac2925;
+                background: #c9302c;
+            }
             @keyframes spin { 
                 0% { transform: rotate(0deg); } 
                 100% { transform: rotate(360deg); } 
