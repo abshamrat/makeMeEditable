@@ -11,13 +11,13 @@ a pure js function to make any field editable on click and send any change to se
 Nothing special. You need to specify the Id and the parameters for that field.
 
 ```html
-<div id="div-box" class="mme">hello world</div>
+<h2 id="title" class="ui teal">Click me to make me editable</h2>
 ```
 
 ```js
 var makeMeEditable = new MakeMeEditable(
 {
-    elemIdToEditable: "div-box",
+    elemIdToEditable: "title",
     endPoint: "localhost/update",
     hoverBG: "#f5f5f5",
     isTextArea: true,
